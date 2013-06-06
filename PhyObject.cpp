@@ -2,6 +2,9 @@
 
 PhyObject::PhyObject()
 {
+	mRot = 0;
+	mRotVel = 0;
+	mMass = 0;
 }
 
 PhyObject::~PhyObject()

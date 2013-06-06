@@ -13,7 +13,7 @@ public:
 	~EllipseObject();
 
 	void drawGL();
-	bool collide(EllipseObject &other);
+	bool collide(EllipseObject &other, vec2D &newVec);
 
 private:
 	double mLength;

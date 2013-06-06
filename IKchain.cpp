@@ -268,8 +268,7 @@ void IKchain::moveBodyParts()
 
 	for(unsigned int i=0; i<M; i++)
 	{
-		ellipseCenter = mPositions[i] + mPositions[i+1];
-		ellipseCenter = ellipseCenter * 0.5;
+		ellipseCenter = (mPositions[i] + mPositions[i+1]) * 0.5;
 		totalRotation += mSegments[i].mTheta;
 
 		mBodyParts[i].moveTo(ellipseCenter);

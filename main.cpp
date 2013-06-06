@@ -42,6 +42,8 @@ void reset()
 
 	mBody = new Body();
 	//mBody->accelerate(vec2D(0,G_ACC));
+
+	mGround = new EllipseObject(vec2D(0,-100),50,50);
 }
 
 void setCamera() 

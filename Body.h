@@ -12,7 +12,8 @@ public:
 	void drawGL();
 	void update();
 
-	void translate(vec2D v);
+	double maxDamage();
+	double assessDamage();
 
 private:
 	IKchain *mSpine;
@@ -20,5 +21,7 @@ private:
 	IKchain *mRightArm;
 	IKchain *mLeftLeg;
 	IKchain *mRightLeg;
+
+	void translate(vec2D v);
 };
 

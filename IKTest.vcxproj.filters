@@ -33,6 +33,9 @@
     <ClCompile Include="Ellipse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DecisionTree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glui.h">
@@ -54,6 +57,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Ellipse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DecisionTree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

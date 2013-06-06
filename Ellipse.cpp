@@ -60,7 +60,7 @@ void EllipseObject::drawGL()
 	OutputDebugStringA("blah!\n");
 }
 
-bool EllipseObject::collide( EllipseObject &other )
+bool EllipseObject::collide(EllipseObject &other, vec2D &newVec)
 {
 	return false;
 }

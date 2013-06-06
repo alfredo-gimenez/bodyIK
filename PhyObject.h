@@ -33,5 +33,7 @@ protected:
 
 	double mRot;
 	double mRotVel;
+
+	double mMass;
 };
 

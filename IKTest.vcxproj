@@ -89,6 +89,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Body.cpp" />
+    <ClCompile Include="DecisionTree.cpp" />
     <ClCompile Include="Ellipse.cpp" />
     <ClCompile Include="IKchain.cpp" />
     <ClCompile Include="main.cpp" />
@@ -97,6 +98,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Body.h" />
+    <ClInclude Include="DecisionTree.h" />
     <ClInclude Include="Ellipse.h" />
     <ClInclude Include="glui.h" />
     <ClInclude Include="glut.h" />

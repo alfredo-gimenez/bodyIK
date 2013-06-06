@@ -92,3 +92,15 @@ void Body::translate(vec2D v)
 	FOR_ALL_LIMBS(calcFK());
 	FOR_ALL_LIMBS(moveBodyParts());
 }
+
+double Body::maxDamage()
+{
+	//TODO: this
+	return 0;
+}
+
+double Body::assessDamage()
+{
+	//TODO: this
+	return 0;
+}
