@@ -1,6 +1,7 @@
 #pragma once
 
 #include "phyobject.h"
+#include <vector>
 
 class EllipseObject :	public PhyObject
 {
@@ -18,5 +19,7 @@ public:
 private:
 	double mLength;
 	double mWidth;
+	void calculate_Ellipse_Vertices();
+	std::vector<vec2D> ellipse_Vertices;
 };
 
