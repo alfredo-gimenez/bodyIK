@@ -54,6 +54,7 @@ public:
 	}
 
 	void drawGL();
+	bool collide(EllipseObject*);
 
 private:
 

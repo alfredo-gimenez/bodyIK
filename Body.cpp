@@ -78,6 +78,12 @@ void Body::update()
 
 	// Calculate IK controls
 	FOR_ALL_LIMBS(calcIK());
+	
+}
+
+void Body::collide(EllipseObject *obj)
+{
+	FOR_ALL_LIMBS(collide(obj));
 }
 
 void Body::translate(vec2D v)

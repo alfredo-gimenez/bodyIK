@@ -65,6 +65,9 @@ IKchain::calcFK()
 
 	mPositions[M].x() = x;
 	mPositions[M].y() = y;
+
+	delete[] costhetas;
+	delete[] sinthetas;
 }
 
 void IKchain::calcIK()
@@ -99,6 +102,9 @@ IKchain::calcJacobian(double *out)
 		out[ROW_MAJOR(0,i,M)] += -1.0 * mSegments[i].mLength * sinthetas[i];
 		out[ROW_MAJOR(1,i,M)] += mSegments[i].mLength * costhetas[i];
 	}
+
+	delete[] costhetas;
+	delete[] sinthetas;
 
 }
 void 
@@ -225,6 +231,9 @@ IKchain::doIKStep()
 	}
 
 	return sqrt(eX*eX+eY*eY);
+
+	delete[] J;
+	delete[] JPI;
 }
 
 void 
@@ -259,6 +268,16 @@ IKchain::drawGL()
 	glEnd();
 }
 
+bool IKchain::collide(EllipseObject* ellipse)
+{
+	bool collision=false;
+	unsigned int M = numSegments();
+	for(unsigned int i=0; i<M; i++)
+	{
+		collision = mBodyParts[i].collide(ellipse);
+	}
+	return collision;
+}
 void IKchain::moveBodyParts()
 {
 	unsigned int M = numSegments();
