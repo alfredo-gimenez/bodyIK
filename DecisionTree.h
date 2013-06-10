@@ -6,23 +6,22 @@
 #include "PhyObject.h"
 #include "Body.h"
 
-#define MAGNITUDE 5.0
-#define NUM_LIMBS 5
-#define POSSIBLE_DECISIONS 1024
+#define MAGNITUDE 4.0
+#define POSSIBLE_DECISIONS 256
 
-#define MONTECARLO_MODE 0
-#define COMBO_MODE		1
+#define NUM_BODY_PARTS 5
 
 class Decision
 {
 public:
 	friend class DecisionTree;
+	friend class Body;
 
 	Decision();
 	~Decision();
 
 private:
-	vec2D mDeltaVectors[NUM_LIMBS];
+	vec2D mDeltaVectors[NUM_BODY_PARTS];
 	double mDecisionWeights[POSSIBLE_DECISIONS];
 	Decision* mNextDecisions[POSSIBLE_DECISIONS];
 
@@ -42,7 +41,9 @@ public:
 	DecisionTree();
 	~DecisionTree();
 
-	void makeNextDecision();
+	Decision* makeNextDecision();
+	inline void createDecisions(int mode, int depth) 
+		{ mRoot->populateNextDecisions(mode, depth); }
 
 private:
 	Decision *mRoot;

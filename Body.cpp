@@ -4,11 +4,10 @@
 #include <math.h>
 
 #define FOR_ALL_LIMBS(f) { \
-	mSpine->f;    \
-	mLeftArm->f;  \
-	mRightArm->f; \
-	mLeftLeg->f;  \
-	mRightLeg->f; \
+	for(int xkcd=0; xkcd<NUM_BODY_PARTS; xkcd++) \
+	{ \
+		mBodyParts[xkcd]->f; \
+	} \
 }
 
 Body::Body()
@@ -19,50 +18,50 @@ Body::Body()
 	mAcc = vec2D(0,0);
 
 	// Create skeleton!
-	mSpine = new IKchain(&mPos);
-	mSpine->addSegment(20.0,M_PI/2.0,10.0);
-	mSpine->addSegment(20.0,0,10.0);
-	mSpine->addSegment(20.0,0,10.0);
-	mSpine->addSegment(30.0,0,10.0);
-	mSpine->resetIK();
+	mBodyParts[SPINE] = new IKchain(&mPos);
+	mBodyParts[SPINE]->addSegment(20.0,M_PI/2.0,10.0);
+	mBodyParts[SPINE]->addSegment(20.0,0,10.0);
+	mBodyParts[SPINE]->addSegment(20.0,0,10.0);
+	mBodyParts[SPINE]->addSegment(30.0,0,10.0);
+	mBodyParts[SPINE]->resetIK();
 
 	// Arms are children of the 3rd spine link
-	mLeftArm = new IKchain(&mSpine->mPositions[3]);
-	mLeftArm->addSegment(40.0,-M_PI,10.0);
-	mLeftArm->addSegment(70.0,M_PI/2.0,10.0);
-	mLeftArm->addSegment(70.0,-M_PI/6.0,10.0);
-	mLeftArm->addSegment(10.0,-M_PI/6.0,10.0);
-	mLeftArm->resetIK();
+	mBodyParts[LEFT_ARM] = new IKchain(&mBodyParts[SPINE]->mPositions[3]);
+	mBodyParts[LEFT_ARM]->addSegment(40.0,-M_PI,10.0);
+	mBodyParts[LEFT_ARM]->addSegment(70.0,M_PI/2.0,10.0);
+	mBodyParts[LEFT_ARM]->addSegment(70.0,-M_PI/6.0,10.0);
+	mBodyParts[LEFT_ARM]->addSegment(10.0,-M_PI/6.0,10.0);
+	mBodyParts[LEFT_ARM]->resetIK();
 
-	mRightArm = new IKchain(&mSpine->mPositions[3]);
-	mRightArm->addSegment(40.0,0.0,10.0);
-	mRightArm->addSegment(70.0,-M_PI/2.0,10.0);
-	mRightArm->addSegment(70.0,M_PI/6.0,10.0);
-	mRightArm->addSegment(10.0,M_PI/6.0,10.0);
-	mRightArm->resetIK();
+	mBodyParts[RIGHT_ARM] = new IKchain(&mBodyParts[SPINE]->mPositions[3]);
+	mBodyParts[RIGHT_ARM]->addSegment(40.0,0.0,10.0);
+	mBodyParts[RIGHT_ARM]->addSegment(70.0,-M_PI/2.0,10.0);
+	mBodyParts[RIGHT_ARM]->addSegment(70.0,M_PI/6.0,10.0);
+	mBodyParts[RIGHT_ARM]->addSegment(10.0,M_PI/6.0,10.0);
+	mBodyParts[RIGHT_ARM]->resetIK();
 
-	mLeftLeg = new IKchain(&mPos);
-	mLeftLeg->addSegment(20.0,-M_PI/4.0,10.0);
-	mLeftLeg->addSegment(70.0,-M_PI/4.0,10.0);
-	mLeftLeg->addSegment(70.0,0.0,10.0);
-	mLeftLeg->addSegment(10.0,M_PI/4.0,10.0);
-	mLeftLeg->resetIK();
+	mBodyParts[LEFT_LEG] = new IKchain(&mPos);
+	mBodyParts[LEFT_LEG]->addSegment(20.0,-M_PI/4.0,10.0);
+	mBodyParts[LEFT_LEG]->addSegment(70.0,-M_PI/4.0,10.0);
+	mBodyParts[LEFT_LEG]->addSegment(70.0,0.0,10.0);
+	mBodyParts[LEFT_LEG]->addSegment(10.0,M_PI/4.0,10.0);
+	mBodyParts[LEFT_LEG]->resetIK();
 
-	mRightLeg = new IKchain(&mPos);
-	mRightLeg->addSegment(20.0,-M_PI/2.0 - M_PI/4.0,10.0);
-	mRightLeg->addSegment(70.0,M_PI/4.0,10.0);
-	mRightLeg->addSegment(70.0,0.0,10.0);
-	mRightLeg->addSegment(10.0,-M_PI/4.0,10.0);
-	mRightLeg->resetIK();
+	mBodyParts[RIGHT_LEG] = new IKchain(&mPos);
+	mBodyParts[RIGHT_LEG]->addSegment(20.0,-M_PI/2.0 - M_PI/4.0,10.0);
+	mBodyParts[RIGHT_LEG]->addSegment(70.0,M_PI/4.0,10.0);
+	mBodyParts[RIGHT_LEG]->addSegment(70.0,0.0,10.0);
+	mBodyParts[RIGHT_LEG]->addSegment(10.0,-M_PI/4.0,10.0);
+	mBodyParts[RIGHT_LEG]->resetIK();
 }
 
 Body::~Body()
 {
-	delete mSpine;
-	delete mLeftArm;
-	delete mRightArm;
-	delete mLeftLeg;
-	delete mRightLeg;
+	for(int p=0; p<NUM_BODY_PARTS; p++)
+	{
+		delete mBodyParts[p];
+	}
+	delete mBodyParts;
 }
 
 void Body::drawGL()
@@ -73,12 +72,12 @@ void Body::drawGL()
 void Body::update()
 {
 	// Move
-	translate(mVel);
-	mVel += mAcc;
+	//translate(mVel);
+	//mVel += mAcc;
 
 	// Calculate IK controls
 	FOR_ALL_LIMBS(calcIK());
-	
+	FOR_ALL_LIMBS(moveBodyParts());
 }
 
 void Body::collide(EllipseObject *obj)
@@ -109,4 +108,12 @@ double Body::assessDamage()
 {
 	//TODO: this
 	return 0;
+}
+
+void Body::makeDecision(Decision *dec)
+{
+	for(int p=0; p<NUM_BODY_PARTS; p++)
+	{
+		mBodyParts[p]->moveGoal(dec->mDeltaVectors[p]);
+	}
 }

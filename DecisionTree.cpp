@@ -1,14 +1,21 @@
 #include "DecisionTree.h"
 #include "stdlib.h"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 Decision::Decision()
 {
-
+	memset(mNextDecisions,NULL,sizeof(mNextDecisions));
 }
 
 Decision::~Decision()
 {
-
+	for(int i=0; i<POSSIBLE_DECISIONS; i++)
+	{
+		if(mNextDecisions[i] != NULL)
+			delete mNextDecisions[i];
+	}
 }
 
 void Decision::populateNextDecisions(int mode, int depth)
@@ -16,6 +23,8 @@ void Decision::populateNextDecisions(int mode, int depth)
 	if(depth == 0)
 		return;
 
+	double theta;
+	double mag;
 	double xval;
 	double yval;
 
@@ -25,10 +34,14 @@ void Decision::populateNextDecisions(int mode, int depth)
 			delete mNextDecisions[i];
 
 		mNextDecisions[i] = new Decision();
-		for(int j=0; j<NUM_LIMBS; j++)
+		for(int j=0; j<NUM_BODY_PARTS; j++)
 		{
-			xval = 2.0*((rand()/RAND_MAX) - 0.5)*MAGNITUDE;
-			yval = 2.0*((rand()/RAND_MAX) - 0.5)*MAGNITUDE;
+			// Random choice on uniform random circle
+			theta = ((double)rand()/(double)RAND_MAX)*2.0*M_PI; 
+			mag = ((double)rand()/(double)RAND_MAX)*MAGNITUDE;
+
+			xval = mag*cos(theta);
+			yval = mag*sin(theta);
 
 			mNextDecisions[i]->mDeltaVectors[j] = vec2D(xval,yval);
 		}
@@ -59,13 +72,22 @@ void Decision::pruneDecisions()
 
 DecisionTree::DecisionTree()
 {
+	mRoot = new Decision();
 }
 
 DecisionTree::~DecisionTree()
 {
 }
 
-void DecisionTree::makeNextDecision()
+Decision* DecisionTree::makeNextDecision()
 {
+	int decisionIdx = ((double)rand()/(double)RAND_MAX)*POSSIBLE_DECISIONS;
 
+	Decision *prevRoot = mRoot;
+	mRoot = mRoot->mNextDecisions[decisionIdx];
+	prevRoot->mNextDecisions[decisionIdx] = NULL;
+
+	delete prevRoot;
+
+	return mRoot;
 }

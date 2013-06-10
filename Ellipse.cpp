@@ -134,65 +134,67 @@ bool EllipseObject::collide( EllipseObject *other )
 	vec2D insideVertice;
 	int closestVertice;
 	for(int x=0;x<other->ellipse_Vertices.size();x++)
+	{
 		if(isVerticeInside(other->ellipse_Vertices[x]))
 		{
 			collision=true;
 			insideVertice=other->ellipse_Vertices[x];
 		}	
+	}
 		
-		float distance =99999999999999.9;
-		//Going to try getting normal a different way
-		//First find closest vertice to the intersection vertice in object
-		for(int x=0;x<ellipse_Vertices.size();x++)
+	float distance =99999999999999.9;
+	//Going to try getting normal a different way
+	//First find closest vertice to the intersection vertice in object
+	for(int x=0;x<ellipse_Vertices.size();x++)
+	{
+		vec2D dist = insideVertice - ellipse_Vertices[x];
+		float tempDist = sqrt(dist.x()*dist.x() + dist.y()*dist.y());
+		if(tempDist < distance)
 		{
-			vec2D dist = insideVertice - ellipse_Vertices[x];
-			float tempDist = sqrt(dist.x()*dist.x() + dist.y()*dist.y());
-			if(tempDist < distance)
-			{
-				closestVertice = x;
-				distance=tempDist;
-			}
+			closestVertice = x;
+			distance=tempDist;
 		}
-		
+	}
 
-		if(collision && !inContact)
-		{
-			//Now can calculate normal
-			vec2D line;
-			if(closestVertice != ellipse_Vertices.size()-1)
-				line = ellipse_Vertices[closestVertice] - ellipse_Vertices[closestVertice+1];
-			else
-				line = ellipse_Vertices[closestVertice] - ellipse_Vertices[0];
 
-			line.normalize();
-			vec2D normal;
-			normal.x() = line.x()*cos(M_PI/2.0) - line.y()*sin(M_PI/2.0);
-			normal.y() = line.x()*sin(M_PI/2.0) + line.y()*cos(M_PI/2.0);
+	if(collision && !inContact)
+	{
+		//Now can calculate normal
+		vec2D line;
+		if(closestVertice != ellipse_Vertices.size()-1)
+			line = ellipse_Vertices[closestVertice] - ellipse_Vertices[closestVertice+1];
+		else
+			line = ellipse_Vertices[closestVertice] - ellipse_Vertices[0];
 
-			vec2D incomingVector(vec2D(other->mVel.x(),other->mVel.y()));
-			//float mag = sqrt(other->mVel.x()*other->mVel.x() + other->mVel.y()*other->mVel.y());
-			//float x = insideVertice.x();
-			//float y = insideVertice.y();
-			//float xtans = ((x-mPos.x())*-cos(mRot +M_PI/2.0) - (y-mPos.y())*-sin(mRot +M_PI/2.0))+mPos.x();
-			//float ytrans = ((x-mPos.x())*-sin(mRot +M_PI/2.0) + (y-mPos.y())*-cos(mRot +M_PI/2.0))+mPos.y();
+		line.normalize();
+		vec2D normal;
+		normal.x() = line.x()*cos(M_PI/2.0) - line.y()*sin(M_PI/2.0);
+		normal.y() = line.x()*sin(M_PI/2.0) + line.y()*cos(M_PI/2.0);
 
-			//vec2D normal(xtans -mPos.x(),ytrans -mPos.y());
-			
-			//reflectionVec.normalize();
-			//normal.normalize();
+		vec2D incomingVector(vec2D(other->mVel.x(),other->mVel.y()));
+		//float mag = sqrt(other->mVel.x()*other->mVel.x() + other->mVel.y()*other->mVel.y());
+		//float x = insideVertice.x();
+		//float y = insideVertice.y();
+		//float xtans = ((x-mPos.x())*-cos(mRot +M_PI/2.0) - (y-mPos.y())*-sin(mRot +M_PI/2.0))+mPos.x();
+		//float ytrans = ((x-mPos.x())*-sin(mRot +M_PI/2.0) + (y-mPos.y())*-cos(mRot +M_PI/2.0))+mPos.y();
+
+		//vec2D normal(xtans -mPos.x(),ytrans -mPos.y());
+
+		//reflectionVec.normalize();
+		//normal.normalize();
 		/*	normal.x() = normal.x()*mLength*0.5;
-			normal.y() = normal.y()*mWidth;
+		normal.y() = normal.y()*mWidth;
 
-			normal.x() = x;
-			normal.y() = y;*/
-			vec2D reflectionVector = incomingVector - (normal*(2.0*(normal.dot(incomingVector))));
-			
-			other->speedupTo(reflectionVector*1.0);
-			other->accelerateTo(vec2D(0,G_ACC*0.01));
-		}
+		normal.x() = x;
+		normal.y() = y;*/
+		vec2D reflectionVector = incomingVector - (normal*(2.0*(normal.dot(incomingVector))));
+
+		other->speedupTo(reflectionVector*1.0);
+		other->accelerateTo(vec2D(0,G_ACC*0.01));
+	}
 
 	//if(!other->inContact)
-		inContact=collision;
+	inContact=collision;
 
 	return collision;
 }

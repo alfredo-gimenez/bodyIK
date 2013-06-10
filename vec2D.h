@@ -34,9 +34,14 @@ public:
 	 vec2D& operator=(const vec2D &rhs); 
 	 vec2D& operator+=(const vec2D &rhs);
 
+	 double length()
+	 {
+		 return sqrt(mX*mX + mY*mY);
+	 }
+
 	 void normalize()
 	 {
-		 float length = sqrt(mX*mX + mY*mY);
+		 double length = this->length();
 		 mX = mX/length;
 		 mY = mY/length;
 	 }

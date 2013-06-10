@@ -4,10 +4,10 @@
 #include "vec2D.h"
 #include "Ellipse.h"
 
-#define MAX_IK_DISTANCE 1.0
-#define MAX_IK_ITERS 50
-#define MAX_ERROR 1.0
-#define DEFAULT_MAG 0.1
+#define MAX_IK_DISTANCE 0.01
+#define MAX_IK_ITERS 100
+#define MAX_ERROR 0.01
+#define DEFAULT_MAG 0.06
 
 class IKchain;
 
@@ -34,9 +34,10 @@ public:
 	~IKchain();
 
 	inline void recalcPositions() { calcFK(); moveBodyParts(); }
-	inline void update() { doIKStep(); }
+	inline void update() { calcIK(); }
 	inline unsigned int numSegments() { return mSegments.size(); }
 	inline void setGoal(vec2D goal) { mGoal=goal; }
+	inline void moveGoal(vec2D delta) { mGoal+=delta; }
 	inline void addSegment(double length, double theta, double width)
 	{ 
 		IKsegment seg(length,theta,width); 
@@ -52,6 +53,15 @@ public:
 		moveBodyParts();
 		mGoal = mPositions[numSegments()];
 	}
+	inline double totalLength()
+	{
+		double total = 0;
+		for(int i=0; i<numSegments(); i++)
+		{
+			total += mSegments[i].mLength;
+		}
+		return total;
+	}
 
 	void drawGL();
 	bool collide(EllipseObject*);
@@ -65,11 +75,10 @@ private:
 	vec2D *mOrigin;
 	vec2D mGoal;
 
-	double mMagnitude;
-
 	void calcSinesCosines(double *sines, double *cosines);
 	void calcFK();
 	void calcIK();
+	//void calcIK();
 	void calcJacobian(double *out);
 	void calcPseudoInverse(double *J, double *out);
 	double calcError(double dpX, double dpY, double *J, double *JPI);

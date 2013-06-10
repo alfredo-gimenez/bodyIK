@@ -8,6 +8,7 @@
 
 #include "PhyObject.h"
 #include "Body.h"
+#include "DecisionTree.h"
 #include "Ellipse.h"
 
 int	main_window;
@@ -27,6 +28,7 @@ double at[3]  = {0.0,0.0,0};
 double up[3]  = {0.0,1.0,0.0};
 
 Body *mBody;
+DecisionTree *mDecisions;
 EllipseObject *mGround;
 std::vector<EllipseObject*> testProjectiles;
 
@@ -41,10 +43,12 @@ void reset()
 	winWidth = 1024;
 	winHeight = 1024;
 
+	mDecisions = new DecisionTree();
+	mDecisions->createDecisions(0,1);
+
 	mBody = new Body();
-	
-	//mBody->mLeftArm->setGoal(vec2D(-100,100));
-	//mBody->accelerate(vec2D(0,G_ACC));
+
+	mBody->accelerate(vec2D(0,G_ACC));
 	mGround = new EllipseObject(vec2D(-0,-195),100000,5,0);
 	testProjectiles.push_back(mGround);
 
@@ -118,6 +122,7 @@ void myGlutMouse(int button, int state, int x, int y)
 	gX = (float)(x) - (winWidth/2.0);
 	gY = -((float)(y) - (winHeight/2.0));
 
+	//mBody->mBodyParts[SPINE]->setGoal(vec2D(gX,gY));
 
 	// Leave the following call in place.  It tells GLUT that
 	// we've done something, and that the window needs to be
@@ -224,16 +229,27 @@ void myGlutDisplay(	void )
 
 }
 
+#define DECISION_FREQ 10
+static unsigned int frameCount = 0;
+
 void myGlutTimer(int t)
 {
 	// Update IK movement
 	mBody->update();
+
 	for(int x=0;x<testProjectiles.size();x++)
 		testProjectiles[x]->update();
-	//mBody->translate(vec2D(0,0.5));
+
+	if(frameCount % DECISION_FREQ == 0)
+	{
+		mBody->makeDecision(mDecisions->makeNextDecision());
+		mDecisions->createDecisions(0,1);
+	}
 
 	// Reset timer
 	glutTimerFunc(1, myGlutTimer, 0);
+
+	frameCount++;
 }
 
 // some controls generate a callback when they are changed

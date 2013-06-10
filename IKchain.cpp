@@ -3,28 +3,29 @@
 #include "glut.h"
 #include "glui.h"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include <algorithm>
+
 IKchain::IKchain()
 	:
-	mOrigin(new vec2D(0,0)),
-	mMagnitude(DEFAULT_MAG)
+	mOrigin(new vec2D(0,0))
 {
 	mPositions.push_back(*mOrigin);
 }
 
 IKchain::IKchain(vec2D *origin)
 	:
-	mOrigin(origin),
-	mMagnitude(DEFAULT_MAG)
+	mOrigin(origin)
 {
 	mPositions.push_back(*mOrigin);
 }
 
-IKchain::~IKchain(void)
+IKchain::~IKchain()
 {
 }
 
-void 
-IKchain::calcSinesCosines(double *sines, double *cosines)
+void IKchain::calcSinesCosines(double *sines, double *cosines)
 {
 	unsigned int M = numSegments();
 
@@ -41,8 +42,7 @@ IKchain::calcSinesCosines(double *sines, double *cosines)
 	}
 }
 
-void 
-IKchain::calcFK()
+void IKchain::calcFK()
 {
 	unsigned int M = numSegments();
 
@@ -66,27 +66,67 @@ IKchain::calcFK()
 	mPositions[M].x() = x;
 	mPositions[M].y() = y;
 
-	delete[] costhetas;
-	delete[] sinthetas;
+	delete [] costhetas;
+	delete [] sinthetas;
 }
 
 void IKchain::calcIK()
 {
-	int i=0;
-	double goalDistance = MAX_IK_DISTANCE+1;
+	unsigned int M = numSegments();
 
-	while(goalDistance > MAX_IK_DISTANCE)// && i < MAX_IK_ITERS)
+	// Do we need to do a step?
+	vec2D errorVec = mGoal - mPositions[M];
+	if(errorVec.length() < MAX_IK_DISTANCE)
+		return;
+
+	// Is the goal past our farthest reach?
+	vec2D goalVec = (mGoal - *mOrigin);
+	double len = totalLength();
+	if(goalVec.length() > len)
 	{
-		goalDistance = doIKStep();
+		// A dot B = ABcos(theta)
+		double tmp = goalVec.x() / (goalVec.length());
+		double theta = acos(tmp);
+
+		double sign = (goalVec.y() > 0) ? +1 : -1;
+
+		mSegments[0].mTheta = sign*theta;
+		for(int i=1; i<M; i++)
+		{
+			mSegments[i].mTheta = 0;
+		}
+
+		return;
+	}
+
+	// Do IK step
+	int i=0;
+
+	while(errorVec.length() > MAX_IK_DISTANCE && i < MAX_IK_ITERS)
+	{
+		doIKStep();
+		calcFK();
+		errorVec = mGoal - mPositions[M];
 		i++;
 	}
 }
 
 #define ROW_MAJOR(x,y,w) x*w+y
-#define CLAMP(v,x,y) if(v<x){v=x;}else if(v>y){v=y;}
+inline double clamp(double v,double x,double y)
+{
+	if(v<x)
+	{
+		return x;
+	}
+	else if(v>y)
+	{
+		return y;
+	}
+	else 
+		return v;
+}
 
-void 
-IKchain::calcJacobian(double *out)
+void IKchain::calcJacobian(double *out)
 {
 	unsigned int M = numSegments();
 
@@ -94,7 +134,7 @@ IKchain::calcJacobian(double *out)
 	double *costhetas = new double[M];
 	double *sinthetas = new double[M];
 	calcSinesCosines(sinthetas,costhetas);
-	
+
 	// Create the jacobian
 	memset(out,0,sizeof(double)*2*M);
 	for(unsigned int i=0; i<M; i++)
@@ -103,12 +143,11 @@ IKchain::calcJacobian(double *out)
 		out[ROW_MAJOR(1,i,M)] += mSegments[i].mLength * costhetas[i];
 	}
 
-	delete[] costhetas;
-	delete[] sinthetas;
-
+	delete [] costhetas;
+	delete [] sinthetas;
 }
-void 
-IKchain::calcPseudoInverse(double *J, double *out)
+
+void IKchain::calcPseudoInverse(double *J, double *out)
 {
 	unsigned int M = numSegments();
 
@@ -130,11 +169,11 @@ IKchain::calcPseudoInverse(double *J, double *out)
 	// http://www.cs.rochester.edu/~brown/Crypto/assts/projects/adj.html
 
 	// Determinant 2x2
-    double det_JJT = JJT[ROW_MAJOR(0,0,2)] * JJT[ROW_MAJOR(1,1,2)] - 
-					 JJT[ROW_MAJOR(1,0,2)] * JJT[ROW_MAJOR(0,1,2)];
+	double det_JJT = JJT[ROW_MAJOR(0,0,2)] * JJT[ROW_MAJOR(1,1,2)] - 
+		JJT[ROW_MAJOR(1,0,2)] * JJT[ROW_MAJOR(0,1,2)];
 
 	// 1/det
-	double rcp_det_JJT = 1.0/det_JJT;
+	double rcp_det_JJT = 1.0/std::max(det_JJT,0.000000001);
 
 	// Inverse = adj2x2(M) * (1/det)
 	double inverse_JJT[4];
@@ -142,7 +181,7 @@ IKchain::calcPseudoInverse(double *J, double *out)
 	inverse_JJT[ROW_MAJOR(0,1,2)] = -JJT[ROW_MAJOR(0,1,2)] * rcp_det_JJT;
 	inverse_JJT[ROW_MAJOR(1,0,2)] = -JJT[ROW_MAJOR(1,0,2)] * rcp_det_JJT;
 	inverse_JJT[ROW_MAJOR(1,1,2)] =  JJT[ROW_MAJOR(0,0,2)] * rcp_det_JJT;
-	
+
 	// Finally, J_Transpose * inverse_JJT
 	// NOTE: using J instead of transpose, indexes reversed
 	memset(out,0,sizeof(double)*2*M);
@@ -153,7 +192,7 @@ IKchain::calcPseudoInverse(double *J, double *out)
 }
 
 double 
-IKchain::calcError(double dpX, double dpY, double *J, double *JPI)
+	IKchain::calcError(double dpX, double dpY, double *J, double *JPI)
 {
 	unsigned int M = numSegments();
 
@@ -183,22 +222,16 @@ IKchain::calcError(double dpX, double dpY, double *J, double *JPI)
 	return error;
 }
 
-double 
-IKchain::doIKStep()
+double IKchain::doIKStep()
 {
 	unsigned int M = numSegments();
 	double gX = mGoal.x();
 	double gY = mGoal.y();
 
 	// Calculate G - X
-	double eX = gX - mPositions[M].x();
-	double eY = gY - mPositions[M].y();
-
-	// Do we need to do a step?
-	double delta = sqrt(eX*eX+eY*eY);
-	if(delta < MAX_ERROR)
-		return delta;
-
+	double eX = DEFAULT_MAG * (gX - mPositions[M].x());
+	double eY = DEFAULT_MAG * (gY - mPositions[M].y());
+	
 	// Set up variables
 	double *J = new double[2*M];
 	double *JPI = new double[2*M];
@@ -226,18 +259,20 @@ IKchain::doIKStep()
 
 	for(unsigned int i=0; i<M; i++)
 	{
-		mSegments[i].mTheta += JPI[ROW_MAJOR(i,0,2)] * eX;
-		mSegments[i].mTheta += JPI[ROW_MAJOR(i,1,2)] * eY;
+		double delta1 = JPI[ROW_MAJOR(i,0,2)] * eX;
+		double delta2 = JPI[ROW_MAJOR(i,1,2)] * eY;
+
+		mSegments[i].mTheta += delta1;//clamp(delta1,-M_PI_4,M_PI_4);
+		mSegments[i].mTheta += delta2;//clamp(delta2,-M_PI_4,M_PI_4);
 	}
 
-	return sqrt(eX*eX+eY*eY);
+	delete [] J;
+	delete [] JPI;
 
-	delete[] J;
-	delete[] JPI;
+	return error;
 }
 
-void 
-IKchain::drawGL() 
+void IKchain::drawGL() 
 {
 	unsigned int M = numSegments();
 
@@ -278,6 +313,7 @@ bool IKchain::collide(EllipseObject* ellipse)
 	}
 	return collision;
 }
+
 void IKchain::moveBodyParts()
 {
 	unsigned int M = numSegments();
