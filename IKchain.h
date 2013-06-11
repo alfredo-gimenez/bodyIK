@@ -42,8 +42,20 @@ public:
 	IKchain(vec2D *origin);
 	~IKchain();
 
-	inline void recalcPositions() { calcFK(); moveBodyParts(); }
 	inline void update() { calcIK(); }
+	void drawGL();
+	bool collide(EllipseObject*);
+	inline double getTotalDamage()
+	{
+		double total = 0;
+		for(int i=0; i<numSegments(); i++)
+		{
+			total += mBodyParts[i].getDamage();
+		}
+		return total;
+	}
+
+private:
 	inline unsigned int numSegments() { return mSegments.size(); }
 	inline void setGoal(vec2D goal) { mGoal=goal; }
 	inline void moveGoal(vec2D delta) { mGoal+=delta; }
@@ -51,10 +63,11 @@ public:
 						   double width, 
 						   double theta, 
 						   double minTheta=-2.0*M_PI,
-						   double maxTheta=2.0*M_PI)
+						   double maxTheta=2.0*M_PI,
+						   double damageWeight = 1.0)
 	{ 
 		IKsegment seg(length,width,theta,minTheta,maxTheta); 
-		EllipseObject part(vec2D(),length,width);
+		EllipseObject part(vec2D(),length,width,damageWeight);
 
 		mSegments.push_back(seg); 
 		mPositions.push_back(vec2D());
@@ -76,8 +89,6 @@ public:
 		return total;
 	}
 
-	void drawGL();
-	bool collide(EllipseObject*);
 
 private:
 

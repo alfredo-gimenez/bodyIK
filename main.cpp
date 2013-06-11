@@ -186,6 +186,9 @@ void myGlutTimer(int t)
 	// Update the scene
 	mScene->update();
 
+	// how much damage?
+	double score = mScene->getSceneScore();
+
 	// Reset timer
 	glutTimerFunc(1, myGlutTimer, 0);
 }

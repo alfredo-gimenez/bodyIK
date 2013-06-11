@@ -50,21 +50,6 @@ void Decision::populateNextDecisions(int mode, int depth)
 	}
 }
 
-void Decision::calculateDecisionWeights()
-{
-	for(int i=0; i<POSSIBLE_DECISIONS; i++)
-	{
-		// Create a copy of the scene and simulate it one timestep forward
-		for(unsigned int ob=0; ob<mScene.size(); ob++)
-		{
-			mScene[ob]->update();
-		}
-
-		mDecisionWeights[i] = mBody->maxDamage() / mBody->assessDamage();
-	}
-
-}
-
 void Decision::pruneDecisions()
 {
 

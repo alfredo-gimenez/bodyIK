@@ -28,6 +28,7 @@ public:
 	inline void rotateTo(double rot) { mRot = rot; }
 
 	inline void damage(unsigned int dmg) { mDamage += dmg; }
+	inline double getDamage() const { return (double)mDamage*mDamageWeight; }
 
 protected:
 	vec2D mPos;
@@ -40,5 +41,6 @@ protected:
 	double mMass;
 
 	unsigned int mDamage;
+	double mDamageWeight;
 };
 

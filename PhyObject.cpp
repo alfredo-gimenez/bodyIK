@@ -6,6 +6,7 @@ PhyObject::PhyObject()
 	mRotVel = 0;
 	mMass = 0;
 	mDamage = 0;
+	mDamageWeight = 0;
 }
 
 PhyObject::~PhyObject()

@@ -10,6 +10,7 @@ public:
 	EllipseObject(vec2D center, 
 		    double length, 
 			double width, 
+			double damageWeight = 1.0,
 			double rotation = 0);
 	~EllipseObject();
 

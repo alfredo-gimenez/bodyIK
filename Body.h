@@ -29,7 +29,6 @@ public:
 	void update();
 	void collide(EllipseObject*);
 
-	double maxDamage();
 	double assessDamage();
 	void makeDecision(Decision *dec);
 

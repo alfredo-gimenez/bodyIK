@@ -25,11 +25,7 @@ private:
 	double mDecisionWeights[POSSIBLE_DECISIONS];
 	Decision* mNextDecisions[POSSIBLE_DECISIONS];
 
-	std::vector<PhyObject*> mScene;
-	Body *mBody;
-
 	void populateNextDecisions(int mode,int depth);
-	void calculateDecisionWeights();
 	void pruneDecisions();
 };
 

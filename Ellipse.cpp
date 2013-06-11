@@ -22,6 +22,7 @@ EllipseObject::EllipseObject()
 EllipseObject::EllipseObject(vec2D center, 
 				 double length, 
                  double width, 
+				 double damageWeight,
 				 double rotation)
 {
 	mPos = center;
@@ -29,6 +30,7 @@ EllipseObject::EllipseObject(vec2D center,
 	mAcc = 0;
 	mRot = rotation;
 	mRotVel = 0;
+	mDamageWeight = damageWeight;
 
 	mLength = length;
 	mWidth = width;
