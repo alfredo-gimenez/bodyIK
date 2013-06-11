@@ -1,6 +1,10 @@
 #pragma once
 
 #include <vector>
+
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 #include "vec2D.h"
 #include "Ellipse.h"
 
@@ -13,15 +17,20 @@ class IKchain;
 
 struct IKsegment
 {
-	IKsegment(double l=10, double t=0, double w=5)
+	IKsegment(double l=10, double w=10, double t=0,
+		      double mint=-2.0*M_PI, double maxt=2.0*M_PI)
 	{
 		mLength=l;
-		mTheta=t;
 		mWidth=w;
+		mTheta=t;
+		mMinTheta=mint;
+		mMaxTheta=maxt;
 	}
 	double mLength;
-	double mTheta;
 	double mWidth;
+	double mTheta;
+	double mMinTheta;
+	double mMaxTheta;
 };
 
 class IKchain
@@ -38,9 +47,13 @@ public:
 	inline unsigned int numSegments() { return mSegments.size(); }
 	inline void setGoal(vec2D goal) { mGoal=goal; }
 	inline void moveGoal(vec2D delta) { mGoal+=delta; }
-	inline void addSegment(double length, double theta, double width)
+	inline void addSegment(double length, 
+						   double width, 
+						   double theta, 
+						   double minTheta=-2.0*M_PI,
+						   double maxTheta=2.0*M_PI)
 	{ 
-		IKsegment seg(length,theta,width); 
+		IKsegment seg(length,width,theta,minTheta,maxTheta); 
 		EllipseObject part(vec2D(),length,width);
 
 		mSegments.push_back(seg); 
@@ -77,8 +90,7 @@ private:
 
 	void calcSinesCosines(double *sines, double *cosines);
 	void calcFK();
-	void calcIK();
-	//void calcIK();
+	double calcIK();
 	void calcJacobian(double *out);
 	void calcPseudoInverse(double *J, double *out);
 	double calcError(double dpX, double dpY, double *J, double *JPI);

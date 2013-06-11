@@ -42,6 +42,7 @@ EllipseObject::~EllipseObject()
 
 void EllipseObject::drawGL()
 {
+	/*
 	double xlength = mLength*cos(mRot);
 	double ylength = mLength*sin(mRot);
 
@@ -49,7 +50,6 @@ void EllipseObject::drawGL()
 
 	vec2D beginPoint = mPos - (lengthVec/2.0);
 	vec2D endPoint = mPos + (lengthVec/2.0);
-
 
 	glLineWidth(5.0);
 	glBegin(GL_LINES);
@@ -59,6 +59,7 @@ void EllipseObject::drawGL()
 		glVertex3f(endPoint.x(),endPoint.y(),0);
 	}
 	glEnd();
+	*/
 
 	calculate_Ellipse_Vertices();
 	
@@ -75,7 +76,7 @@ void EllipseObject::drawGL()
 		if(inContact==true)
 			glColor3f(1,0,0);
 		else
-			glColor3f(1,1,0);
+			glColor3f(0.0,0.6,0.9);
 		for(int x=0;x<ellipse_Vertices.size()-1;x++)
 		{
 			glVertex3f(mPos.x(),mPos.y(),0);
@@ -90,10 +91,10 @@ void EllipseObject::drawGL()
 	}
 	glEnd();
 
-	glLineWidth(1.0);
+	glLineWidth(2.0);
 	glBegin(GL_LINES);
 	{
-		glColor3f(1,0,1);
+		glColor3f(0,0.1,0.8);
 		for(int x=0;x<ellipse_Vertices.size()-1;x++)
 		{
 			glVertex3f(ellipse_Vertices[x].x(),ellipse_Vertices[x].y(),0);
@@ -171,7 +172,7 @@ bool EllipseObject::collide( EllipseObject *other )
 		normal.x() = line.x()*cos(M_PI/2.0) - line.y()*sin(M_PI/2.0);
 		normal.y() = line.x()*sin(M_PI/2.0) + line.y()*cos(M_PI/2.0);
 
-		vec2D incomingVector(vec2D(other->mVel.x(),other->mVel.y()));
+		vec2D incomingVector = other->mVel;
 		//float mag = sqrt(other->mVel.x()*other->mVel.x() + other->mVel.y()*other->mVel.y());
 		//float x = insideVertice.x();
 		//float y = insideVertice.y();
@@ -189,8 +190,16 @@ bool EllipseObject::collide( EllipseObject *other )
 		normal.y() = y;*/
 		vec2D reflectionVector = incomingVector - (normal*(2.0*(normal.dot(incomingVector))));
 
+		// TODO: calculate relative damage as incoming in direction of this normal
+		//       plus outgoing in direction of other object normal
+		// abs( dot(incomingVec, thisNormal) ) 
+		// + abs( dot(outgoingVec, otherNormal) )
+
+		double incomingAmt = abs(incomingVector.dot(normal));
+
 		other->speedupTo(reflectionVector*1.0);
 		other->accelerateTo(vec2D(0,G_ACC*0.01));
+		damage(incomingAmt);
 	}
 
 	//if(!other->inContact)

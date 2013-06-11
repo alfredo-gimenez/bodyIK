@@ -70,14 +70,17 @@ void IKchain::calcFK()
 	delete [] sinthetas;
 }
 
-void IKchain::calcIK()
+double IKchain::calcIK()
 {
 	unsigned int M = numSegments();
 
 	// Do we need to do a step?
 	vec2D errorVec = mGoal - mPositions[M];
 	if(errorVec.length() < MAX_IK_DISTANCE)
-		return;
+	{
+		calcFK();
+		return errorVec.length();
+	}
 
 	// Is the goal past our farthest reach?
 	vec2D goalVec = (mGoal - *mOrigin);
@@ -96,12 +99,12 @@ void IKchain::calcIK()
 			mSegments[i].mTheta = 0;
 		}
 
-		return;
+		calcFK();
+		return 0;
 	}
 
 	// Do IK step
 	int i=0;
-
 	while(errorVec.length() > MAX_IK_DISTANCE && i < MAX_IK_ITERS)
 	{
 		doIKStep();
@@ -109,6 +112,8 @@ void IKchain::calcIK()
 		errorVec = mGoal - mPositions[M];
 		i++;
 	}
+
+	return errorVec.length();
 }
 
 #define ROW_MAJOR(x,y,w) x*w+y
@@ -257,13 +262,18 @@ double IKchain::doIKStep()
 		eY /= 2.0;
 	}
 
+	double delta1,delta2;
+	double newTheta;
 	for(unsigned int i=0; i<M; i++)
 	{
-		double delta1 = JPI[ROW_MAJOR(i,0,2)] * eX;
-		double delta2 = JPI[ROW_MAJOR(i,1,2)] * eY;
+		delta1 = JPI[ROW_MAJOR(i,0,2)] * eX;
+		delta2 = JPI[ROW_MAJOR(i,1,2)] * eY;
 
-		mSegments[i].mTheta += delta1;//clamp(delta1,-M_PI_4,M_PI_4);
-		mSegments[i].mTheta += delta2;//clamp(delta2,-M_PI_4,M_PI_4);
+		newTheta = mSegments[i].mTheta + delta1 + delta2;
+
+		mSegments[i].mTheta = clamp(newTheta,
+									mSegments[i].mMinTheta,
+									mSegments[i].mMaxTheta);
 	}
 
 	delete [] J;

@@ -6,7 +6,7 @@
 #include "PhyObject.h"
 #include "Body.h"
 
-#define MAGNITUDE 4.0
+#define MAGNITUDE 40.0
 #define POSSIBLE_DECISIONS 256
 
 #define NUM_BODY_PARTS 5

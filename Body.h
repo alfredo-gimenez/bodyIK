@@ -5,6 +5,7 @@
 #include "DecisionTree.h"
 
 #define NUM_BODY_PARTS 5
+#define IK_DELTA_STEPS 10
 
 enum BodyPartIndex
 {
@@ -32,9 +33,8 @@ public:
 	double assessDamage();
 	void makeDecision(Decision *dec);
 
-	IKchain *mBodyParts[NUM_BODY_PARTS];
 private:
-
-	void translate(vec2D v);
+	IKchain *mBodyParts[NUM_BODY_PARTS];
+	vec2D mIKDest[NUM_BODY_PARTS];
 };
 
