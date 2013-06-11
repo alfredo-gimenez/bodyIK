@@ -6,6 +6,7 @@
 #include "glut.h"
 #include "glui.h"
 
+#include "Scene.h"
 #include "PhyObject.h"
 #include "Body.h"
 #include "DecisionTree.h"
@@ -27,10 +28,7 @@ double seye[3] = {0.0,0.0,10};
 double at[3]  = {0.0,0.0,0};
 double up[3]  = {0.0,1.0,0.0};
 
-Body *mBody;
-DecisionTree *mDecisions;
-EllipseObject *mGround;
-std::vector<EllipseObject*> testProjectiles;
+Scene *mScene;
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -43,36 +41,7 @@ void reset()
 	winWidth = 1024;
 	winHeight = 1024;
 
-	mDecisions = new DecisionTree();
-	mDecisions->createDecisions(0,1);
-
-	mBody = new Body();
-
-	mBody->accelerate(vec2D(0,G_ACC));
-	mGround = new EllipseObject(vec2D(-0,-195),100000,5,0);
-	testProjectiles.push_back(mGround);
-
-	mGround = new EllipseObject(vec2D(-450,305),1000,5,M_PI/2.0);
-	testProjectiles.push_back(mGround);
-
-	mGround = new EllipseObject(vec2D(450,305),1000,5,M_PI/2.0);
-	testProjectiles.push_back(mGround);
-
-	EllipseObject *testObj;
-	testObj =new EllipseObject(vec2D(-100,110),30,15,2);
-	testObj->accelerate(vec2D(0,G_ACC*0.01));
-	testObj->speedupTo(vec2D(2,0));
-	testProjectiles.push_back(testObj);
-
-	testObj =new EllipseObject(vec2D(100,0),30,15,2);
-	testObj->accelerate(vec2D(0,G_ACC*0.01));
-	testObj->speedupTo(vec2D(-2,0));
-	testProjectiles.push_back(testObj);
-
-	testObj =new EllipseObject(vec2D(-3,140),30,15,2);
-	testObj->accelerate(vec2D(0,G_ACC*0.01));
-	testObj->speedupTo(vec2D(0,0));
-	testProjectiles.push_back(testObj);
+	mScene = new Scene();
 }
 
 void setCamera() 
@@ -201,26 +170,9 @@ void myGlutDisplay(	void )
 	glLoadIdentity();
 	gluLookAt(seye[0],seye[1],seye[2],  at[0],at[1],at[2],  up[0],up[1],up[2]);
 
-	// Draw the polygon, as its plotted or the clipped polygon after 6 points
-	// and the viewport have been defined
-
-	for(int x=0;x<testProjectiles.size();x++)
-		mBody->collide(testProjectiles[x]);
+	// Draw here
+	mScene->drawGL();
 	
-	for(int x=0;x<testProjectiles.size();x++)
-		for(int y=0;y<testProjectiles.size();y++)
-			if(x !=y )
-				testProjectiles[x]->collide(testProjectiles[y]);
-	
-	//testProjectiles[1]->collide(testProjectiles[0]);
-	
-	for(int x=0;x<testProjectiles.size();x++)
-		testProjectiles[x]->drawGL();
-
-	mBody->drawGL();
-	
-	// Draw the IK chains
-
 	// Execute any GL functions that are in the queue.
 	glFlush();
 
@@ -229,27 +181,13 @@ void myGlutDisplay(	void )
 
 }
 
-#define DECISION_FREQ 10
-static unsigned int frameCount = 0;
-
 void myGlutTimer(int t)
 {
-	// Update IK movement
-	mBody->update();
-
-	for(int x=0;x<testProjectiles.size();x++)
-		testProjectiles[x]->update();
-
-	if(frameCount % DECISION_FREQ == 0)
-	{
-		mBody->makeDecision(mDecisions->makeNextDecision());
-		mDecisions->createDecisions(0,1);
-	}
+	// Update the scene
+	mScene->update();
 
 	// Reset timer
 	glutTimerFunc(1, myGlutTimer, 0);
-
-	frameCount++;
 }
 
 // some controls generate a callback when they are changed

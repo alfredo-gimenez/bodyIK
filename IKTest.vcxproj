@@ -94,6 +94,7 @@
     <ClCompile Include="IKchain.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PhyObject.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="vec2D.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -104,6 +105,7 @@
     <ClInclude Include="glut.h" />
     <ClInclude Include="IKchain.h" />
     <ClInclude Include="PhyObject.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="vec2D.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

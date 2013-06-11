@@ -116,7 +116,6 @@ double Body::maxDamage()
 
 double Body::assessDamage()
 {
-	//TODO: this
 	return 0;
 }
 

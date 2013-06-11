@@ -6,8 +6,8 @@
 #include "PhyObject.h"
 #include "Body.h"
 
-#define MAGNITUDE 40.0
-#define POSSIBLE_DECISIONS 256
+#define MAGNITUDE 100.0
+#define POSSIBLE_DECISIONS 512
 
 #define NUM_BODY_PARTS 5
 

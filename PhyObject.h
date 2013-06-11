@@ -10,7 +10,8 @@ public:
 	PhyObject();
 	~PhyObject();
 
-	void update();
+	virtual void update();
+	virtual void drawGL()=0;
 
 	inline void accelerate(vec2D acc) { mAcc += acc; }
 	inline void speedup(vec2D vel) { mVel += vel; }
