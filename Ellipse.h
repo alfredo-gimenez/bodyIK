@@ -18,7 +18,7 @@ public:
 	void drawGL();
 	bool collide(EllipseObject *other);
 
-	bool inContact;
+	int inContact;
 	bool immobile;
 
 private:

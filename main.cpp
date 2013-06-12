@@ -1,5 +1,7 @@
 #include <Windows.h>
 
+#include <iostream>
+
 #define _USE_MATH_DEFINES
 #include <math.h>
 
@@ -156,6 +158,7 @@ void myGlutReshape(int	x, int y)
 	glutPostRedisplay();
 }
 
+void screenShot(const char *prefix);
 
 // draw the scene
 void myGlutDisplay(	void )
@@ -182,6 +185,7 @@ void myGlutDisplay(	void )
 	// Now, show the frame buffer that we just drew into.
 	glutSwapBuffers();
 
+	screenShot("C:/Users/chai/Desktop/frames/screen_");
 }
 
 #define DECISION_FREQ LOOKAHEAD
@@ -201,6 +205,38 @@ void calcDecisions()
 		Decision *nextDecision = mDecisions->makeNextDecision();
 		mScene->makeDecision(nextDecision);
 	}
+}
+
+#include "FreeImage.h"
+#include <sstream>
+#include <iomanip>
+
+void screenShot(const char *prefix)
+{
+	// Make the BYTE array, factor of 3 because it's RBG.
+	int size = 3 * winWidth * winHeight;
+	BYTE* pixels = new BYTE[size];
+
+	glReadPixels(0, 0, winWidth, winHeight, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
+	std::ostringstream filenameSS;
+	filenameSS << prefix;
+	filenameSS << std::setfill('0') << std::setw(4) << mScene->getFrameCount();
+	filenameSS << ".bmp";
+
+	std::string filename = filenameSS.str();
+	std::cout << filename << std::endl;
+
+	// Convert to FreeImage format & save to file
+	FIBITMAP* image = FreeImage_ConvertFromRawBits(
+		pixels, winWidth, winHeight, 3 * winWidth, 24, 
+		0xFF0000, 0x00FF00, 0x0000FF, false);
+	FreeImage_Save(FIF_BMP, image, filename.c_str(), 0);
+
+	// Free resources
+	FreeImage_Unload(image);
+
+	delete [] pixels;
 }
 
 void myGlutTimer(int t)
@@ -232,6 +268,7 @@ void glui_cb(int control)
 // entry point
 int main(int argc, char* argv[])
 {
+
 	// Initialize
 	reset();
 

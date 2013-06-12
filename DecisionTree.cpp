@@ -5,6 +5,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <time.h>
+#include <omp.h>
 
 Decision::Decision()
 	:
@@ -26,6 +27,13 @@ Decision::~Decision()
 	}
 }
 
+#define ROWMAJ(xx,yy,zz,n) xx*n*n+yy*n+zz
+
+double round(double number)
+{
+    return number < 0.0 ? ceil(number - 0.5) : floor(number + 0.5);
+}
+
 void Decision::populateNextDecisions(int mode, int depth)
 {
 	mDepth = depth;
@@ -40,26 +48,36 @@ void Decision::populateNextDecisions(int mode, int depth)
 
 	srand(clock());
 
-	for(int i=0; i<mNumDecisions; i++)
+	int numDirections = round(pow(mNumDecisions,1.0/3.0));
+	mag = MAGNITUDE;
+
+	std::vector<vec2D> dirs;
+	for(int d=0; d<numDirections; d++)
 	{
-		if(mNextDecisions[i])
-			delete mNextDecisions[i];
+		theta = ((double)d/(double)numDirections) * (2.0*M_PI) ;
+		xval = mag*cos(theta);
+		yval = mag*sin(theta);
+		dirs.push_back(vec2D(xval,yval));
+	}
 
-		mNextDecisions[i] = new Decision();
-		for(int j=0; j<mNumVectors; j++)
+	int count=0;
+	for(int id=0; id<numDirections; id++)
+	{
+		for(int j=0; j<numDirections; j++)
 		{
-			// Random choice on uniform random circle
-			theta = ((double)rand()/(double)RAND_MAX)*2.0*M_PI; 
-			//mag = ((double)rand()/(double)RAND_MAX)*MAGNITUDE;
-			mag = MAGNITUDE;
+			for(int k=0; k<numDirections; k++)
+			{
+				if(mNextDecisions[count])
+					delete mNextDecisions[count];
+				mNextDecisions[count] = new Decision();
 
-			xval = (i==0) ? 0 : mag*cos(theta);
-			yval = (i==0) ? 0 : mag*sin(theta);
-
-			mNextDecisions[i]->mDeltaVectors[j] = vec2D(xval,yval);
+				mNextDecisions[count]->mDeltaVectors[0] = dirs[id];
+				mNextDecisions[count]->mDeltaVectors[1] = dirs[j];
+				mNextDecisions[count]->mDeltaVectors[2] = dirs[k];
+				mNextDecisions[count]->populateNextDecisions(mode,depth-1);
+				count++;
+			}
 		}
-
-		mNextDecisions[i]->populateNextDecisions(mode,depth-1);
 	}
 }
 
@@ -68,9 +86,10 @@ void Decision::calculateDecisionWeights(Scene *scene, int depth)
 	if(depth == 0)
 		return;
 	
-#pragma omp parallel
 	{
-#pragma omp for
+		omp_set_num_threads(4);
+
+#pragma omp parallel for
 		for(int i=0; i<mNumDecisions; i++)
 		{
 			// Simulate the decision and all next decisions up to depth
@@ -84,9 +103,9 @@ void Decision::calculateDecisionWeights(Scene *scene, int depth)
 				sceneCopy->update();
 			}
 
-			weight = sceneCopy->getSceneScore();
 			mDecisionWeights[i] = weight;
 
+			// For impact
 			//if(weight - scene->getSceneScore() == 0)
 			//{
 			//	mDecisionWeights[i] = -1.0;
@@ -100,6 +119,10 @@ void Decision::calculateDecisionWeights(Scene *scene, int depth)
 				int bestSubDecision = mNextDecisions[i]->getNextBestDecision();
 				mDecisionWeights[i] = mNextDecisions[i]->mDecisionWeights[bestSubDecision];
 			}
+			else
+			{
+				mDecisionWeights[i] = sceneCopy->getSceneScore();
+			}
 
 			delete sceneCopy;
 		}
@@ -112,7 +135,6 @@ int Decision::getNextBestDecision()
 	int bestDecision = 0;
 	double bestWeight = std::numeric_limits<double>::max();
 
-	// TODO: best combination of next decisions
 	for(int i=0; i<mNumDecisions; i++)
 	{
 		if(mDecisionWeights[i] < bestWeight)

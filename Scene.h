@@ -8,7 +8,7 @@
 #define NUM_DECISIONS 64
 #define DECISION_DEPTH 1
 #define MOTION_ITERS 500
-#define LOOKAHEAD 1000
+#define LOOKAHEAD 500
 
 class Decision;
 

@@ -16,7 +16,7 @@ EllipseObject::EllipseObject()
 
 	mLength = 5.0;
 	mWidth = 5.0;
-	inContact = false;
+	inContact = 0;
 	immobile = false;
 }
 
@@ -36,7 +36,7 @@ EllipseObject::EllipseObject(vec2D center,
 
 	mLength = length;
 	mWidth = width;
-	inContact=false;
+	inContact = 0;
 	immobile = false;
 }
 
@@ -66,7 +66,7 @@ void EllipseObject::drawGL()
 	
 	glBegin(GL_TRIANGLES);
 	{
-		if(inContact==true)
+		if(inContact > 0)
 			glColor3f(1,0,0);
 		else
 			glColor3f(0.0,0.6,0.9);
@@ -105,7 +105,8 @@ void EllipseObject::calculate_Ellipse_Vertices()
 
 	ellipse_Vertices.clear();
 
-	int number_Of_Triangles = 6;
+	int number_Of_Triangles = 30;
+
 	width_Vector =  vec2D(cos(mRot+M_PI/2),sin(mRot+M_PI/2))*mWidth;
 	length_Vector = vec2D(-sin(mRot+M_PI/2),cos(mRot+M_PI/2))*mLength*0.5;
 	//Sweep vector around ellipse, vector is combo of V1 and V2;
@@ -148,8 +149,10 @@ bool EllipseObject::collide( EllipseObject *other )
 	}
 
 
-	if(collision && !inContact)
+	if(collision && inContact <= 0)
 	{
+		inContact = 10;
+
 		//Now can calculate normal
 		vec2D line;
 		if(closestVertice != ellipse_Vertices.size()-1)
@@ -193,9 +196,10 @@ bool EllipseObject::collide( EllipseObject *other )
 		}
 		damage(incomingAmt);
 	}
-
-	//if(!other->inContact)
-	inContact=collision;
+	else
+	{
+		inContact--;
+	}
 
 	return collision;
 }
