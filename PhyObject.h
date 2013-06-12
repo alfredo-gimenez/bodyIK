@@ -2,7 +2,7 @@
 
 #include "vec2D.h"
 
-#define G_ACC -1.0
+#define G_ACC -0.001
 
 class PhyObject
 {
@@ -29,6 +29,10 @@ public:
 
 	inline void damage(unsigned int dmg) { mDamage += dmg; }
 	inline double getDamage() const { return (double)mDamage*mDamageWeight; }
+
+	inline vec2D getPos() const { return mPos; }
+	inline vec2D getVel() const { return mVel; }
+	inline vec2D getAcc() const { return mAcc; }
 
 protected:
 	vec2D mPos;

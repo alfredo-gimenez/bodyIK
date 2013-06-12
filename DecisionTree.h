@@ -3,13 +3,13 @@
 #include <vector>
 
 #include "vec2D.h"
-#include "PhyObject.h"
+#include "Scene.h"
 #include "Body.h"
 
-#define MAGNITUDE 100.0
-#define POSSIBLE_DECISIONS 512
+#define MAGNITUDE 800.0
+#define SIMULATION_ITERATIONS LOOKAHEAD
 
-#define NUM_BODY_PARTS 5
+class Scene;
 
 class Decision
 {
@@ -21,12 +21,24 @@ public:
 	~Decision();
 
 private:
-	vec2D mDeltaVectors[NUM_BODY_PARTS];
-	double mDecisionWeights[POSSIBLE_DECISIONS];
-	Decision* mNextDecisions[POSSIBLE_DECISIONS];
+	// How many vecs/decision?
+	// how many next decisions?
+	unsigned int mNumVectors;
+	unsigned int mNumDecisions;
 
-	void populateNextDecisions(int mode,int depth);
-	void pruneDecisions();
+	// Depth of decisions below
+	int mDepth;
+
+	// The actual decision (bunch of vectors)
+	std::vector<vec2D> mDeltaVectors;
+
+	// The weights and pointers to next decisions
+	std::vector<double> mDecisionWeights;
+	std::vector<Decision*> mNextDecisions;
+
+	void populateNextDecisions(int mode, int depth);
+	void calculateDecisionWeights(Scene *scene, int depth);
+	int getNextBestDecision();
 };
 
 class DecisionTree
@@ -37,15 +49,12 @@ public:
 	DecisionTree();
 	~DecisionTree();
 
+	void populateDecisionTree(int mode, int depth = 1);
+	void calculateDecisionWeights(Scene *scene);
 	Decision* makeNextDecision();
-	inline void createDecisions(int mode, int depth) 
-		{ mRoot->populateNextDecisions(mode, depth); }
 
 private:
+	int mDepth;
 	Decision *mRoot;
-
-	std::vector<PhyObject*> mScene;
-	Body *mBody;
-
 };
 

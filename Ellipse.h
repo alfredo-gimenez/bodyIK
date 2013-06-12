@@ -7,6 +7,7 @@ class EllipseObject :	public PhyObject
 {
 public:
 	EllipseObject();
+	EllipseObject(EllipseObject *ellipse);
 	EllipseObject(vec2D center, 
 		    double length, 
 			double width, 
@@ -16,10 +17,14 @@ public:
 
 	void drawGL();
 	bool collide(EllipseObject *other);
+
 	bool inContact;
+	bool immobile;
+
 private:
 	double mLength;
 	double mWidth;
+	// get rid of these?
 	vec2D width_Vector;
 	vec2D length_Vector;
 

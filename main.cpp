@@ -29,6 +29,7 @@ double at[3]  = {0.0,0.0,0};
 double up[3]  = {0.0,1.0,0.0};
 
 Scene *mScene;
+DecisionTree *mDecisions;
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -41,7 +42,11 @@ void reset()
 	winWidth = 1024;
 	winHeight = 1024;
 
+	// Create Scene
 	mScene = new Scene();
+
+	// Create decision tree
+	mDecisions = new DecisionTree();
 }
 
 void setCamera() 
@@ -90,8 +95,6 @@ void myGlutMouse(int button, int state, int x, int y)
 
 	gX = (float)(x) - (winWidth/2.0);
 	gY = -((float)(y) - (winHeight/2.0));
-
-	//mBody->mBodyParts[SPINE]->setGoal(vec2D(gX,gY));
 
 	// Leave the following call in place.  It tells GLUT that
 	// we've done something, and that the window needs to be
@@ -181,8 +184,30 @@ void myGlutDisplay(	void )
 
 }
 
+#define DECISION_FREQ LOOKAHEAD
+
+void calcDecisions()
+{
+	// create new decisions
+	if(mScene->getFrameCount() % (DECISION_DEPTH*DECISION_FREQ) == 0)
+	{
+		mDecisions->populateDecisionTree(0,DECISION_DEPTH);
+		mDecisions->calculateDecisionWeights(mScene);
+	}
+
+	// Make next decision
+	if(mScene->getFrameCount() % DECISION_FREQ == 0)
+	{
+		Decision *nextDecision = mDecisions->makeNextDecision();
+		mScene->makeDecision(nextDecision);
+	}
+}
+
 void myGlutTimer(int t)
 {
+	// Decide and execute decision
+	calcDecisions();
+
 	// Update the scene
 	mScene->update();
 

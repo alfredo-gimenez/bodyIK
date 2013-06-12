@@ -16,7 +16,8 @@ EllipseObject::EllipseObject()
 
 	mLength = 5.0;
 	mWidth = 5.0;
-	inContact=false;
+	inContact = false;
+	immobile = false;
 }
 
 EllipseObject::EllipseObject(vec2D center, 
@@ -30,13 +31,30 @@ EllipseObject::EllipseObject(vec2D center,
 	mAcc = 0;
 	mRot = rotation;
 	mRotVel = 0;
+	mDamage = 0;
 	mDamageWeight = damageWeight;
 
 	mLength = length;
 	mWidth = width;
 	inContact=false;
+	immobile = false;
 }
 
+EllipseObject::EllipseObject(EllipseObject *ellipse)
+{
+	mPos = ellipse->mPos;
+	mVel = ellipse->mVel;
+	mAcc = ellipse->mAcc;
+	mRot = ellipse->mRot;
+	mRotVel = ellipse->mRotVel;
+	mDamage = ellipse->mDamage;
+	mDamageWeight = ellipse->mDamageWeight;
+
+	mLength = ellipse->mLength;
+	mWidth = ellipse->mWidth;
+	inContact = ellipse->inContact;
+	immobile = ellipse->immobile;
+}
 
 EllipseObject::~EllipseObject()
 {
@@ -44,35 +62,8 @@ EllipseObject::~EllipseObject()
 
 void EllipseObject::drawGL()
 {
-	/*
-	double xlength = mLength*cos(mRot);
-	double ylength = mLength*sin(mRot);
-
-	vec2D lengthVec(xlength,ylength);
-
-	vec2D beginPoint = mPos - (lengthVec/2.0);
-	vec2D endPoint = mPos + (lengthVec/2.0);
-
-	glLineWidth(5.0);
-	glBegin(GL_LINES);
-	{
-		glColor3f(0,1,0);
-		glVertex3f(beginPoint.x(),beginPoint.y(),0);
-		glVertex3f(endPoint.x(),endPoint.y(),0);
-	}
-	glEnd();
-	*/
-
 	calculate_Ellipse_Vertices();
 	
-	/*
-	vec2D tVec(0,59);
-	glColor3f(1,0.5,0.5);
-	glBegin(GL_POINTS);
-	glVertex3f(tVec.x(),tVec.y(),0);
-	glEnd();
-	bool inside = isVerticeInside(tVec);
-	*/
 	glBegin(GL_TRIANGLES);
 	{
 		if(inContact==true)
@@ -107,9 +98,6 @@ void EllipseObject::drawGL()
 
 	}
 	glEnd();
-
-
-	OutputDebugStringA("blah!\n");
 }
 
 void EllipseObject::calculate_Ellipse_Vertices()
@@ -117,7 +105,7 @@ void EllipseObject::calculate_Ellipse_Vertices()
 
 	ellipse_Vertices.clear();
 
-	int number_Of_Triangles = 10;
+	int number_Of_Triangles = 6;
 	width_Vector =  vec2D(cos(mRot+M_PI/2),sin(mRot+M_PI/2))*mWidth;
 	length_Vector = vec2D(-sin(mRot+M_PI/2),cos(mRot+M_PI/2))*mLength*0.5;
 	//Sweep vector around ellipse, vector is combo of V1 and V2;
@@ -199,8 +187,10 @@ bool EllipseObject::collide( EllipseObject *other )
 
 		double incomingAmt = abs(incomingVector.dot(normal));
 
-		other->speedupTo(reflectionVector*1.0);
-		other->accelerateTo(vec2D(0,G_ACC*0.01));
+		if(!other->immobile)
+		{
+			other->speedupTo(reflectionVector*0.8);
+		}
 		damage(incomingAmt);
 	}
 

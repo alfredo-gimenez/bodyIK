@@ -3,9 +3,7 @@
 #include "PhyObject.h"
 #include "IKchain.h"
 #include "DecisionTree.h"
-
-#define NUM_BODY_PARTS 5
-#define IK_DELTA_STEPS 10
+#include "Scene.h"
 
 enum BodyPartIndex
 {
@@ -14,7 +12,7 @@ enum BodyPartIndex
 	RIGHT_ARM,
 	LEFT_LEG,
 	RIGHT_LEG,
-//	NUM_BODY_PARTS
+	NUM_BODY_PARTS
 };
 
 class Decision;
@@ -23,6 +21,7 @@ class Body : public PhyObject
 {
 public:
 	Body();
+	Body(Body *body);
 	~Body();
 
 	void drawGL();
@@ -33,7 +32,7 @@ public:
 	void makeDecision(Decision *dec);
 
 private:
-	IKchain *mBodyParts[NUM_BODY_PARTS];
-	vec2D mIKDest[NUM_BODY_PARTS];
+	std::vector<IKchain> mBodyParts;
+	std::vector<vec2D> mIKDest;
 };
 

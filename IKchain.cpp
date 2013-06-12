@@ -271,6 +271,8 @@ double IKchain::doIKStep()
 
 		newTheta = mSegments[i].mTheta + delta1 + delta2;
 
+		// NO CONSTRAINTS
+		//mSegments[i].mTheta = newTheta;
 		mSegments[i].mTheta = clamp(newTheta,
 									mSegments[i].mMinTheta,
 									mSegments[i].mMaxTheta);

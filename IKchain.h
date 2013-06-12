@@ -8,10 +8,10 @@
 #include "vec2D.h"
 #include "Ellipse.h"
 
-#define MAX_IK_DISTANCE 0.01
-#define MAX_IK_ITERS 100
+#define MAX_IK_DISTANCE 0.1
+#define MAX_IK_ITERS 200
 #define MAX_ERROR 0.01
-#define DEFAULT_MAG 0.06
+#define DEFAULT_MAG 0.1
 
 class IKchain;
 
